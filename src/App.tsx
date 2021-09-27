@@ -1,19 +1,33 @@
-import React, { useRef, useState } from "react";
-import { Button, Card, Container, FormControl, FormGroup, FormLabel, Row } from "react-bootstrap";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Card, Container, FormControl, FormGroup, FormLabel, Row, Spinner } from "react-bootstrap";
 import client from "./ApiClient";
-import { Band } from "./Types";
+import { Band, Option } from "./Types";
+import ModalBand from "./ModalBand";
+import { useHistory, useParams } from "react-router-dom";
 
 function App() {
     const searchRef = useRef<HTMLInputElement>(null);
 
-    const [bands, setBands] = useState<Band[]>([]);
+    const [bands, setBands] = useState<Option<Band[]>>(null);
+    const [selectedBand, setSelectedBand] = useState<Option<Band>>(null);
+
+    const params = useParams<any>();
+    const bandQuery = decodeURIComponent(params.query);
+    const history = useHistory();
+
+    useEffect(() => {
+        if (bandQuery) {
+            client.searchBand(bandQuery).then((res) => setBands(res));
+        }
+    }, [bandQuery]);
 
     const search = () => {
         const input = searchRef.current?.value;
         if (!input) {
             return;
         }
-        client.searchBand(input).then((res) => setBands(res));
+        history.push(`/${encodeURIComponent(input)}`);
+        setBands(null);
     };
 
     return (
@@ -26,22 +40,35 @@ function App() {
                 <Button onClick={search}>Search</Button>
             </Row>
             <Row>
-                {bands &&
+                {selectedBand && <ModalBand onClose={() => setSelectedBand(null)} band={selectedBand} />}
+                {bands ? (
                     bands.map((band) => (
-                        <Card style={{ width: "18rem" }} key={band.uid}>
+                        <Card onClick={() => setSelectedBand(band)} style={{ width: "18rem" }} key={band.uid}>
                             <Card.Img variant="top" src={band.url_for_image_original} />
                             <Card.Title>{band.name}</Card.Title>
-                            <Card.Body>{getBioText(band)}</Card.Body>
+                            <Card.Body>{getBioText(band, 200)}</Card.Body>
                         </Card>
-                    ))}
+                    ))
+                ) : bandQuery ? (
+                    <></>
+                ) : (
+                    <Spinner animation="border" />
+                )}
             </Row>
         </Container>
     );
 }
 
-function getBioText(band: Band): string {
+export function getBioText(band: Band, maxLen: number): string {
     const bio = band.biographies.find((bio) => bio.lang === "de") || band.biographies[0];
-    return bio?.description || "Keine Biographie angegeben.";
+    return limit(bio?.description || "Keine Biographie angegeben.", maxLen);
+}
+
+function limit(str: string, max: number): string {
+    if (str.length > max) {
+        return str.substr(0, max - 3) + "...";
+    }
+    return str;
 }
 
 export default App;

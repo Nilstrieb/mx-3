@@ -1,5 +1,5 @@
 import axiosInstance from "./AxiosInstance";
-import { Band } from "./Types";
+import { Band, Response } from "./Types";
 
 export class ApiClient {
     private readonly _cache: { [route: string]: any };
@@ -8,12 +8,12 @@ export class ApiClient {
         this._cache = {};
     }
 
-    public async get<T>(route: string, force = false): Promise<T> {
+    public async get<T, Name extends string>(route: string, force = false): Promise<Response<T, Name>> {
         if (!force && this._cache[route]) {
             return this._cache[route];
         }
         const res = await axiosInstance.get(route);
-        const data = res.data.response;
+        const data: Response<T, Name> = res.data.response;
         if (res.status === 200) {
             this._cache[route] = data;
         }
@@ -21,7 +21,7 @@ export class ApiClient {
     }
 
     public async searchBand(name: string): Promise<Band[]> {
-        const res = await this.get<any>(`/bands?query=${encodeURIComponent(name)}`);
+        const res = await this.get<Band[], "bands">(`/bands?query=${encodeURIComponent(name)}`);
         return res.bands;
     }
 }

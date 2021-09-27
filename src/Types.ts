@@ -1,5 +1,3 @@
-import band from "./bandByIdRes.json";
-
 export type Option<T> = T | null;
 
 export interface Band {
@@ -34,4 +32,8 @@ export interface Band {
     singles_count: number;
     performances: Array<any>;
 }
-export type BandById = typeof band;
+
+export type Response<T, Name extends string> = {
+    status: string;
+    code: string;
+} & { [P in Name]: T };
