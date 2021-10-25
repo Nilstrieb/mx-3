@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Container, FormControl, FormGroup, FormLabel, Row, Spinner } from "react-bootstrap";
+import { Button, Card, Container, Form, FormControl, FormGroup, FormLabel, Row, Spinner } from "react-bootstrap";
 import client from "./ApiClient";
 import { Band, Option } from "./Types";
 import ModalBand from "./ModalBand";
@@ -21,38 +21,41 @@ function App() {
         }
     }, [bandQuery]);
 
-    const search = () => {
+    const search = (e: any) => {
         const input = searchRef.current?.value;
         if (!input) {
             return;
         }
         history.push(`/${encodeURIComponent(input)}`);
         setBands(null);
+        e.preventDefault();
     };
 
     return (
         <Container>
             <Row>
-                <FormGroup>
-                    <FormLabel>Search Band</FormLabel>
-                    <FormControl name="searchBand" type="text" ref={searchRef} />
-                </FormGroup>
-                <Button onClick={search}>Search</Button>
+                <Form onSubmit={search}>
+                    <FormGroup controlId="searchBand">
+                        <FormLabel>Search Band</FormLabel>
+                        <FormControl name="searchBand" type="text" ref={searchRef} />
+                    </FormGroup>
+                    <Button type="submit">Search</Button>
+                </Form>
             </Row>
-            <Row>
+            <Row aria-live="polite">
                 {selectedBand && <ModalBand onClose={() => setSelectedBand(null)} band={selectedBand} />}
                 {bands ? (
                     bands.map((band) => (
                         <Card onClick={() => setSelectedBand(band)} style={{ width: "18rem" }} key={band.uid}>
-                            <Card.Img variant="top" src={band.url_for_image_original} />
+                            <Card.Img variant="top" src={band.url_for_image_original} alt={band.name} />
                             <Card.Title>{band.name}</Card.Title>
                             <Card.Body>{getBioText(band, 200)}</Card.Body>
                         </Card>
                     ))
                 ) : bandQuery ? (
-                    <></>
-                ) : (
                     <Spinner animation="border" />
+                ) : (
+                    <></>
                 )}
             </Row>
         </Container>
