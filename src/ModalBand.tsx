@@ -1,7 +1,6 @@
 import React from "react";
 import { Band } from "./Types";
-import { Button, Modal, Spinner } from "react-bootstrap";
-import { getBioText } from "./App";
+import { Button, Modal } from "react-bootstrap";
 
 interface Props {
     onClose: () => void;
