@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Container, Form, FormControl, FormGroup, FormLabel, Row, Spinner } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, FormControl, FormGroup, FormLabel, Row, Spinner } from "react-bootstrap";
 import client from "./ApiClient";
 import { Band, Option } from "./Types";
 import ModalBand from "./ModalBand";
@@ -53,7 +53,9 @@ function App() {
                         </Card>
                     ))
                 ) : bandQuery ? (
-                    <Spinner animation="border" />
+                    <Col>
+                        <Spinner animation="border" />
+                    </Col>
                 ) : (
                     <></>
                 )}
